@@ -12,6 +12,7 @@ from .qwen2_week2 import Qwen2ModelWeek2
 from .qwen2_week3 import Qwen2ModelWeek3
 from .qwen3 import Qwen3Model
 from .qwen3_week1 import Qwen3ModelWeek1
+from .qwen3_week2 import Qwen3ModelWeek2
 from .sampler import *
 from .kv_cache import *
 from .paged_kv_cache import *

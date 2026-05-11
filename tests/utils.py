@@ -16,6 +16,10 @@ def assert_allclose(
     atol: float | None = None,
     message: str | None = None,
 ):
+    if a.dtype == mx.bfloat16:
+        a = a.astype(mx.float32)
+    if b.dtype == mx.bfloat16:
+        b = b.astype(mx.float32)
     a = np.array(a)
     b = np.array(b)
     if precision == mx.float32:
@@ -24,6 +28,9 @@ def assert_allclose(
     elif precision == mx.float16:
         rtol = rtol or 3.0e-2
         atol = atol or 1.0e-5
+    elif precision == mx.bfloat16:
+        rtol = rtol or 5.0e-2
+        atol = atol or 1.0e-2
     else:
         raise ValueError(f"Unsupported precision: {precision}")
     assert a.shape == b.shape, f"shape mismatch: {a.shape} vs {b.shape}"

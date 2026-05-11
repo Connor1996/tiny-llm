@@ -2,7 +2,12 @@ from types import SimpleNamespace
 
 import mlx.core as mx
 
-from .tiny_llm_base import Qwen3ModelWeek1, Qwen3ModelWeek2, models
+from .tiny_llm_base import (
+    Qwen3ModelWeek1,
+    Qwen3ModelWeek2,
+    Qwen3ModelWeek3,
+    models,
+)
 from .utils import assert_allclose
 
 
@@ -107,3 +112,24 @@ def test_qwen3_week1_prefill_matches_week2_cache_loader():
     week2_out = _normalize_logits(week2(inputs, 0, week2.create_kv_cache()))
 
     assert_allclose(week1_out, week2_out, precision=mx.bfloat16, rtol=0.1, atol=0.5)
+
+
+def test_qwen3_week3_incremental_decode_matches_week2():
+    mlx_model = _fake_qwen3_mlx_model()
+    inputs = mx.array([[1, 5, 7, 3, 9, 11]], dtype=mx.int32)
+    week2 = Qwen3ModelWeek2(mlx_model)
+    week3 = Qwen3ModelWeek3(mlx_model, page_size=4)
+    week2_cache = week2.create_kv_cache()
+    week3_cache = week3.create_kv_cache()
+
+    for offset in range(inputs.shape[1]):
+        token = inputs[:, offset : offset + 1]
+        week2_out = _normalize_logits(week2(token, offset, week2_cache))
+        week3_out = _normalize_logits(week3(token, offset, week3_cache))
+        assert_allclose(
+            week3_out,
+            week2_out,
+            precision=mx.bfloat16,
+            rtol=1e-3,
+            atol=1e-3,
+        )
